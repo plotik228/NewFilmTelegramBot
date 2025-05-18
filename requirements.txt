@@ -1,0 +1,5 @@
+typing
+telegram.ext
+telegram
+requests
+logging
