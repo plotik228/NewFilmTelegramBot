@@ -261,7 +261,10 @@ async def start_search(update: Update, context: CallbackContext) -> int:
         "🔍 <b>Введите название фильма или сериала:</b>\n\n"
         "Можно уточнить год выпуска для более точного поиска.\n"
         "<i>Пример: Криминальное чтиво 1994</i>",
-        parse_mode="HTML"
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🏠 В главное меню", callback_data="main_menu")]
+        ])
     )
 
     return SEARCH
@@ -489,8 +492,12 @@ def main() -> None:
 
     conv_handler = ConversationHandler(
         entry_points=[
+            CommandHandler("start", start_command),
+            CommandHandler("help", help_command),
             CommandHandler("search", start_search),
-            CallbackQueryHandler(start_search, pattern="^start_search$")
+            CallbackQueryHandler(start_search, pattern="^start_search$"),
+            CallbackQueryHandler(help_button, pattern="^help$"),
+            CallbackQueryHandler(main_menu, pattern="^main_menu$")
         ],
         states={
             SEARCH: [MessageHandler(filters.TEXT & ~filters.COMMAND, process_search)],
@@ -500,17 +507,17 @@ def main() -> None:
                 CallbackQueryHandler(show_similar, pattern="^similar_"),
                 CallbackQueryHandler(show_where_to_watch, pattern="^where_to_watch_"),
                 CallbackQueryHandler(back_to_results, pattern="^back_to_results$"),
-                CallbackQueryHandler(main_menu, pattern="^main_menu$")
+                CallbackQueryHandler(main_menu, pattern="^main_menu$"),
+                CallbackQueryHandler(start_search, pattern="^start_search$")
             ]
         },
         fallbacks=[
             CommandHandler("start", start_command),
-            CommandHandler("help", help_command)
+            CommandHandler("help", help_command),
+            CallbackQueryHandler(main_menu, pattern="^main_menu$")
         ]
     )
 
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler("help", help_command))
     application.add_handler(conv_handler)
     application.add_handler(CallbackQueryHandler(help_button, pattern="^help$"))
     application.add_handler(CallbackQueryHandler(main_menu, pattern="^main_menu$"))
